@@ -88,7 +88,7 @@ class LexerImpl implements Lexer{
     this.source = source
   }
 
-  fetchToken(){
+  fetchToken() : Token{
     let identifier = undefined
     this.ignoreSpace()
     let move = this.position
@@ -126,7 +126,7 @@ class LexerImpl implements Lexer{
 
   }
 
-  identifier2token(id : string, position : number, st : symbol){
+  identifier2token(id : string, position : number, st : symbol) : Token{
     if(st == state.number)
       return createToken(id,TokenType.Literal, position)
     else if(st == state.letter)
@@ -134,7 +134,7 @@ class LexerImpl implements Lexer{
     else return createToken(id, TokenType.OP, position)
   }
 
-  getIdentifier(from : number, to : number){
+  getIdentifier(from : number, to : number) : string{
     return this.source.substring(from,to)
   }
 
