@@ -41,3 +41,8 @@ export interface Visitor{
 
   visitVar(node : TreeNode) : RCValue
 }
+
+export interface EvalBuilder {
+  setEnv(name: string, value : number) : EvalBuilder
+  eval(source : string) : RCValue
+}
