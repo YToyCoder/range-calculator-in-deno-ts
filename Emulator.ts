@@ -33,9 +33,14 @@ export class RCValue {
     }
   }
 
-  // constructor(num : number){
-  //   self(num, undefined, undefined, undefined)
-  // }
+  equal(other : RCValue, delta ?: number): boolean {
+    function valueEqual(a: number, b : number, delta ?: number) {
+      return typeof delta == 'undefined' ? a == b : Math.abs(a - b) <= delta
+    }
+    const numberEqual : () => boolean = () => valueEqual(Number(this.number), Number(other.number), delta)
+    const rangeEqual : () => boolean = () => valueEqual(Number(this.leftN), Number(other.leftN), delta) && valueEqual(Number(this.rightN), Number(this.rightN), delta)
+    return other.type == this.type && (this.type == RCValueT.PureNumber ? numberEqual() : rangeEqual())
+  }
 
   add(other : RCValue){
     // console.log(`-> add ${JSON.stringify(this)} ${JSON.stringify(other)}`);

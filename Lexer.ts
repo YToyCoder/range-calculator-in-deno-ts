@@ -31,6 +31,7 @@ const state : Record<string,symbol> = {
   range : Symbol('10'),
   add : Symbol('11'),
   divide : Symbol('12'),
+  double : Symbol('13'),
   err : Symbol('error')
 }
 
@@ -61,9 +62,11 @@ function transport(inputChar : string, currentState : symbol) : symbol{
         else return state.err
     }
   }else if(currentState == state.number){
-    return isDigital(inputChar) ? state.number : state.err
+    return isDigital(inputChar) ? state.number : inputChar == '.' ? state.double : state.err
   } else if(currentState == state.letter){
     return isLetter(inputChar) ? state.letter : state.err
+  } else if(currentState == state.double) {
+    return isDigital(inputChar) ? state.double : state.err
   } else 
     throw new Error('transport err')
 }
@@ -106,7 +109,7 @@ class LexerImpl implements Lexer{
         this.position = move
         this.state = state.start
         return this.identifier2token( identifier, recordPosition,  recordState)
-      }else if(nextState == state.letter || nextState == state.number) {
+      }else if(nextState == state.letter || nextState == state.number || nextState == state.double) {
         this.state = nextState
         move++
       }else {
@@ -127,7 +130,7 @@ class LexerImpl implements Lexer{
   }
 
   identifier2token(id : string, position : number, st : symbol) : Token{
-    if(st == state.number)
+    if(st == state.number || st == state.double)
       return createToken(id,TokenType.Literal, position)
     else if(st == state.letter)
       return createToken(id,TokenType.Variable, position)
