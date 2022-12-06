@@ -11,6 +11,7 @@ Deno.test("test number",() =>
   assertEquals(rc_eval("(1 + 2) + (4 ~ 5) - (3 + 4 )"), new RCValue(RCValueT.RangeValue, 0, 1));
   assertFalse( !rc_eval("(1 + 2) + (4.0 ~ 4.83) - (3 + 4 )").equal(new RCValue(RCValueT.RangeValue, 0.0, 0.83)))
   assertFalse( rc_eval("(1 + 2) + (4.01 ~ 4.83) - (3 + 4 )").equal(new RCValue(RCValueT.RangeValue, 0.0, 0.83)))
+  console.log((new RCValue(RCValueT.RangeValue, 0.0, 0.83)).toString());
 });
 
 Deno.test("test double", () => {

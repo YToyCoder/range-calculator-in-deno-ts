@@ -33,6 +33,17 @@ export class RCValue {
     }
   }
 
+  toString(){
+    if(this.type == RCValueT.PureNumber)
+      return this.number
+    else if(this.type == RCValueT.RangeValue) {
+      const a = Number(this.leftN);
+      const b = Number(this.rightN);
+      return `(${Math.min(a, b)} ~ ${Math.max(a,b)})`
+    }
+    return "Error Type";
+  }
+
   equal(other : RCValue, delta ?: number): boolean {
     function valueEqual(a: number, b : number, delta ?: number) {
       return typeof delta == 'undefined' ? a == b : Math.abs(a - b) <= delta
