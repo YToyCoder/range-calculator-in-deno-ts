@@ -90,11 +90,8 @@ export class ParserImpl implements Parser{
     if(!lexer.hasNext())
       throw new Error('buildF empty')
     const start = lexer.next()
-    // console.log(`build f start is ${start.id}`);
     if(!isOp(start)){
-      // console.log(`create end ast node ${JSON.stringify(start)}`);
       /** F -> id */
-      // return createEndAstNode(start.id)
       if(isVariable(start))
         return new VariableExpression(start.id, AstNodeT.Variable, undefined)
       return new NumExpression(start.id, AstNodeT.NUM, undefined)
@@ -110,7 +107,6 @@ export class ParserImpl implements Parser{
       }
       return range
     }
-    // console.log(`start f -> e , next token is ${JSON.stringify(lexer.peek())} , current token is ${JSON.stringify(start)}`);
     const ans = this.buildE(lexer)
     if(!lexer.hasNext() || lexer.next().id != ')') // pop )
       throw new Error('pase () error : has no )')
@@ -140,11 +136,9 @@ export class ParserImpl implements Parser{
         throw new Error('buildE error left is build as undefined')
       if(lexer.hasNext() && opOk(lexer.peek()) ){
         const op = lexer.next()
-        // console.log(`building e op is ${op.id}`);
         if(!isOp(op))
           throw new Error(`pase error! it's not op ${op.id} ${op.position} ${op.type} : OP ${op}  .`)
         const right = this.buildE(lexer)
-        // return createNotEndAstNode(op.id, [left, right])
         switch (op.id) {
           case '+':
             return new AddExpression(op.id, AstNodeT.ADD, [left, right])
@@ -177,7 +171,6 @@ export class ParserImpl implements Parser{
     }
 
     if(lexer.hasNext()){
-      // console.log(`build t start, next token is ${JSON.stringify( lexer.peek() )}`);
       let left = this.buildF(lexer)
       // deno-lint-ignore no-inner-declarations
       function merge(right: TreeNode, op: Token) {
@@ -192,13 +185,11 @@ export class ParserImpl implements Parser{
             throw new Error(`error in operator `)
         }
       }
-      // console.log(`build t , left is ${JSON.stringify(left)}`);
       while(lexer.hasNext() && opOk(lexer.peek())){
         const op = lexer.next()
         if(!opOk(op))
           throw new Error(`build T op is ${op.id}`)
         const right = this.buildF(lexer)
-        // return createNotEndAstNode(op.id, [left, right])
         left = merge(right,op)
       }
       return left
@@ -208,13 +199,11 @@ export class ParserImpl implements Parser{
 
   // ( id ~ id )
   private getRange(lexer: Lexer){
-    // console.log(`building range `);
     const left = this.buildF(lexer)
     const rangeOp = lexer.next()
     if(rangeOp.id != '~')
       throw new Error('getRange error')
     const right = this.buildF(lexer)
-    // return createNotEndAstNode('~',[left, right])
     return new RangeExpression("~", AstNodeT.RANGE, [left, right])
   }
 
