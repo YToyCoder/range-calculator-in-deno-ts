@@ -18,6 +18,7 @@ export interface TreeNode {
   readonly value : string | number
   readonly type : AstNodeT 
   readonly children : Array<TreeNode> | undefined
+  readonly loc : number
   accept(visitor : Visitor) : any 
 }
 
@@ -139,3 +140,16 @@ export class RCValue {
 
 }
 
+export type RCError = {
+  source(): string
+  message() : string
+  location() : Array<number>
+  errorMark(): string
+}
+
+export type RCErrorBuilder = {
+  source(source: string): RCErrorBuilder
+  message(message: string): RCErrorBuilder
+  location(loc: number): RCErrorBuilder
+  build(): RCError
+}

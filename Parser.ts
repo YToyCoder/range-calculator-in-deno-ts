@@ -1,16 +1,19 @@
 import { Lexer, Token, TokenType } from "./Lexer.ts";
-import { AstNodeT, Parser, TreeNode, Visitor } from "./types.ts"
+import { errorBuilder } from "./RCError.ts";
+import { AstNodeT, Parser, RCValue, TreeNode, Visitor } from "./types.ts"
 
 export abstract class CommonNode implements TreeNode{
-  constructor(value : string | number, type : AstNodeT, children : Array<TreeNode> | undefined){
+  constructor(value : string | number, type : AstNodeT, loc: number, children : Array<TreeNode> | undefined){
     this.value = value
     this.type = type
     this.children = children
+    this.loc = loc
   }
-  abstract accept(visitor: Visitor) : any; 
+  abstract accept(visitor: Visitor) : RCValue; 
   value: string|number;
   type: AstNodeT;
   children: TreeNode[] | undefined;
+  loc: number
 }
 
 class AddExpression extends CommonNode{
@@ -93,23 +96,39 @@ export class ParserImpl implements Parser{
     if(!isOp(start)){
       /** F -> id */
       if(isVariable(start))
-        return new VariableExpression(start.id, AstNodeT.Variable, undefined)
-      return new NumExpression(start.id, AstNodeT.NUM, undefined)
+        return new VariableExpression(start.id, AstNodeT.Variable, start.position, undefined)
+      return new NumExpression(start.id, AstNodeT.NUM, start.position, undefined)
     }
     if(start.id != '(')
-      throw new Error(`build (F -> (E) | id | (id ~ id)) error , should not start with ${start.id} position (${start.position})`)
+      throw errorBuilder()
+      .location(start.position)
+      .source(lexer.source)
+      .message("语法错误")
+      .build()
+      // throw new Error(`build (F -> (E) | id | (id ~ id)) error , should not start with ${start.id} position (${start.position})`)
     const next = lexer.peek(0)
     const nextNext = lexer.peek(1)
     if(!isOp(next) && nextNext?.id == '~'){
       const range = this.getRange(lexer)
-      if(lexer.next().id != ')'){
-        throw new Error('range has no closingParenthesis!')
+      let rec = undefined
+      if(!lexer.hasNext() || (rec = lexer.next()).id != ')'){
+        // throw new Error('range has no closingParenthesis!')
+        throw errorBuilder()
+        .location(rec == undefined ? lexer.source.length - 1 : rec.position)
+        .message("范围运算应该写成(a ~ b)")
+        .source(lexer.source)
+        .build()
       }
       return range
     }
     const ans = this.buildE(lexer)
-    if(!lexer.hasNext() || lexer.next().id != ')') // pop )
-      throw new Error('pase () error : has no )')
+    let rec = undefined
+    if(!lexer.hasNext() || (rec = lexer.next()).id != ')') // pop )
+      throw errorBuilder()
+      .location(rec == undefined ? lexer.source.length - 1 : rec.position)
+      .message("公式错误没有反括号‘)’")
+      .source(lexer.source)
+      .build()
     return ans
   }
 
@@ -131,26 +150,42 @@ export class ParserImpl implements Parser{
     }
 
     if(lexer.hasNext()){
+      const start = lexer.peek()
       const left = this.buildT(lexer)
       if(!left)
-        throw new Error('buildE error left is build as undefined')
+        errorBuilder()
+        .source(lexer.source)
+        .location(Number(start?.position))
+        .message("语法错误")
+        .build()
+
       if(lexer.hasNext() && opOk(lexer.peek()) ){
         const op = lexer.next()
-        if(!isOp(op))
-          throw new Error(`pase error! it's not op ${op.id} ${op.position} ${op.type} : OP ${op}  .`)
         const right = this.buildE(lexer)
         switch (op.id) {
           case '+':
-            return new AddExpression(op.id, AstNodeT.ADD, [left, right])
+            return new AddExpression(op.id, AstNodeT.ADD, op.position, [left, right])
           case '-':
-            return new SubExpression(op.id, AstNodeT.SUB, [left, right])
+            return new SubExpression(op.id, AstNodeT.SUB, op.position,[left, right])
           default:
-            throw new Error('operator error')
+            throw errorBuilder()
+            .source(lexer.source)
+            .location(op.position)
+            .message(`无法识别${op.id}操作`)
+            .build()
         }
       }
       return left
     }else 
-      throw new Error('lexer empty when build e')
+      throw this.unrecognizedError()
+  }
+
+  unrecognizedError(){
+    return errorBuilder()
+    .source(this.lexer.source)
+    .location(this.lexer.source.length - 1)
+    .message("语法错误")
+    .build()
   }
 
   /**
@@ -176,35 +211,36 @@ export class ParserImpl implements Parser{
       function merge(right: TreeNode, op: Token) {
         switch (op.id) {
           case '*':
-            return new MultiExpression('*', AstNodeT.MULTI, [left,right])
+            return new MultiExpression('*', AstNodeT.MULTI, op.position, [left,right])
           case '^':
-            return new PowExpression('^', AstNodeT.POW, [left, right])
+            return new PowExpression('^', AstNodeT.POW,op.position, [left, right])
           case '/':
-            return new DividExpression('/',AstNodeT.DIVID, [left, right])
+            return new DividExpression('/',AstNodeT.DIVID, op.position, [left, right])
           default:
-            throw new Error(`error in operator `)
+            throw errorBuilder()
+            .location(op.position)
+            .message("无法识别运算符")
+            .source(lexer.source)
+            .build()
         }
       }
       while(lexer.hasNext() && opOk(lexer.peek())){
         const op = lexer.next()
-        if(!opOk(op))
-          throw new Error(`build T op is ${op.id}`)
         const right = this.buildF(lexer)
         left = merge(right,op)
       }
       return left
     }else 
-      throw new Error('lexer empty when build T')
+      throw this.unrecognizedError()
+      // new Error('lexer empty when build T')
   }
 
   // ( id ~ id )
   private getRange(lexer: Lexer){
     const left = this.buildF(lexer)
     const rangeOp = lexer.next()
-    if(rangeOp.id != '~')
-      throw new Error('getRange error')
     const right = this.buildF(lexer)
-    return new RangeExpression("~", AstNodeT.RANGE, [left, right])
+    return new RangeExpression("~", AstNodeT.RANGE, rangeOp.position, [left, right])
   }
 
 }

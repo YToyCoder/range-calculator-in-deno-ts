@@ -1,8 +1,18 @@
 import { assertEquals, assertFalse} from "https://deno.land/std@0.165.0/testing/asserts.ts";
-import { RCValue, RCValueT } from "./Emulator.ts";
-import { createToken, TokenType } from "./Lexer.ts";
+import { RCValue, RCValueT } from "./types.ts";
+import { createToken, LexerFactoryImpl, TokenType } from "./Lexer.ts";
 import { EvalBuilderImpl, rc_eval } from './main.ts'
 import { tokenlize } from './Util.ts'
+import { errorBuilder } from "./RCError.ts";
+
+function errorTest(source: string) {
+  try{
+    new EvalBuilderImpl()
+    .eval(source)
+  }catch(e){
+    console.error(e.toString());
+  }
+}
 
 Deno.test("test number",() => 
 {
@@ -16,6 +26,14 @@ Deno.test("test number",() =>
     .setEnv('b', 10)
     .setEnv('k', -1)
     .eval("(a + b * (20 + k)) + (2 ~ 3)")
+  try {
+    new EvalBuilderImpl()
+    .eval("a + 2 * a")
+  }catch(e){
+    e._source = "a + 2 * a"
+    console.error(e.toString())
+    // throw e.toString()
+  }
   console.log(res.toString())
   console.log((new RCValue(RCValueT.RangeValue, 0.0, 0.83)).toString());
 });
@@ -27,4 +45,37 @@ Deno.test("test double", () => {
   assertEquals(toks[2], createToken("20.30", TokenType.Literal, 7))
   assertEquals(toks[3], createToken("-", TokenType.OP, 13))
   assertEquals(toks[4], createToken("4", TokenType.Literal, 15))
+})
+
+Deno.test("error report", () => {
+  const erm = errorBuilder()
+  .source("1 + 2 + 3")
+  .location(0)
+  .location(2)
+  .message("message")
+  .build()
+  console.log(erm.toString());
+})
+
+Deno.test("lexer error report", () => {
+  const lexer = (new LexerFactoryImpl("1>>")).create()
+  try {
+    while(lexer.hasNext()){
+      const n = lexer.next()
+    }
+  }catch(e){
+    console.log(e.toString());
+    
+  }
+})
+
+Deno.test({
+  name: "error",
+  fn: () => {
+    errorTest("22 + (3 * 4")
+    errorTest("(3+2)-")
+    errorTest("2-3 * 4 ( 2 ^ 10 )")
+    errorTest("(2.001 ~ 3.002) - a * 10")
+    errorTest("(2.001 ~ 3.002) - a * 10 + build + 3.004")
+  }
 })
