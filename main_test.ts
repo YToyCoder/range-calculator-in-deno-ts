@@ -81,7 +81,7 @@ Deno.test({
   }
 })
 
-function try_with(fn: Function){
+function try_with(fn: () => void){
   try {
     fn()
   }catch(e){
