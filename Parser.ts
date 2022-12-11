@@ -64,6 +64,12 @@ class VariableExpression extends CommonNode{
   }
 }
 
+class AssignmentExpression extends CommonNode{
+  accept(visitor: Visitor): RCValue {
+    return visitor.visitAssignment(this)
+  }
+}
+
 /* paser */
 function isVariable(token: Token) : boolean{
   return token.type == TokenType.Variable
@@ -83,7 +89,46 @@ export class ParserImpl implements Parser{
   parse() : TreeNode {
     if(!this.lexer.hasNext())
       throw new Error('paser err')
-    return this.buildE(this.lexer)
+    return this.term(this.lexer)
+  }
+
+  /**
+   * A -> id "=" E | E 
+   */
+  private term(lexer : Lexer) : TreeNode {
+    if(!lexer.hasNext())
+      throw errorBuilder()
+      .message("空字符串")
+      .build()
+    const idOrExpr = this.buildE(lexer)
+    function isEqualOp(tok: Token | undefined) : boolean {
+      if(typeof tok == "undefined")
+        return false
+      return tok.type == TokenType.OP && tok.id == '=' 
+    }
+    if(idOrExpr.type == AstNodeT.Variable && lexer.hasNext() && isEqualOp(lexer.peek())) {
+      // id "=" E
+      const id = idOrExpr
+      const equalOp = lexer.next()
+      if(!lexer.hasNext())
+        throw errorBuilder()
+        .location(equalOp.position)
+        .message("赋值语句没有初始化值")
+        .build()
+      const expr = this.buildE(lexer)
+      if(lexer.hasNext())
+        throw errorBuilder()
+        .location(lexer.next().position - 1)
+        .message("语法错误")
+        .build()
+      return new AssignmentExpression("=",AstNodeT.Assignment, equalOp.position, [id,expr])
+    }else if(lexer.hasNext()){
+      throw errorBuilder()
+      .location(lexer.next().position - 1)
+      .message("语法错误")
+      .build()
+    }
+    return idOrExpr
   }
 
   /**

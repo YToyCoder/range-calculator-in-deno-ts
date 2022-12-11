@@ -1,16 +1,31 @@
 import { errorBuilder } from "./RCError.ts"
-import { TreeNode, Visitor, RCValueT, createPureRCValue, createRangeRCValue } from "./types.ts"
+import { TreeNode, Visitor, RCValueT, createPureRCValue, createRangeRCValue, RCValue } from "./types.ts"
 
 export class Emulator implements Visitor {
-  readonly variableValues : Map<string,number>
+  readonly variableValues : Map<string,RCValue>
   readonly source: string
   
   constructor(source: string){
-    this.variableValues = new Map<string,number>()
+    this.variableValues = new Map<string,RCValue>()
     this.source = source
   }
+  visitAssignment(node: TreeNode): RCValue {
+    if(!node.children)
+      throw errorBuilder()
+      .source(this.source)
+      .location(node.loc)
+      .message("解释赋值语句错误")
+      .build()
 
-  set(name : string, value : number){
+    // this.set(node.children[])
+    const name = node.children[0].value.toString()
+    this.set(name, createPureRCValue(0))
+    const value  = (node.children[1].accept(this) as RCValue)
+    this.set(name, value)
+    return value
+  }
+
+  set(name : string, value : RCValue){
     this.variableValues.set(name, value)
     return this
   }
@@ -74,7 +89,7 @@ export class Emulator implements Visitor {
       .message(`不存在变量${name}`)
       .build()
       // throw new Error(`couldn't find variable ${name} `)
-    return createPureRCValue(value)
+    return value
   }
 
 }

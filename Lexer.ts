@@ -73,7 +73,7 @@ function transport(inputChar : string, currentState : symbol) : symbol{
 }
 
 function isOp(str: string): boolean {
-  return /[\*|\^|+|\-|/|~/(|)]/.test(str)
+  return /[\*|\^|+|\-|=|/|~/(|)]/.test(str)
 }
 
 export interface Lexer {
