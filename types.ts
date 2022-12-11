@@ -1,3 +1,4 @@
+import { fixDecimal } from "./Util.ts"
 export enum AstNodeT {
   MULTI ,
   DIVID ,
@@ -80,13 +81,23 @@ export class RCValue {
 
   toString(){
     if(this.type == RCValueT.PureNumber)
-      return this.number
+      return fixDecimal(Number(this.number), 3)
     else if(this.type == RCValueT.RangeValue) {
       const a = Number(this.leftN);
       const b = Number(this.rightN);
-      return `(${Math.min(a, b)} ~ ${Math.max(a,b)})`
+      return `(${ fixDecimal( Math.min(a, b), 3)} ~ ${fixDecimal( Math.max(a,b), 3)})`
     }
     return "Error Type";
+  }
+
+  max(): number{
+    const v = this.type == RCValueT.PureNumber ? Number(this.number) : Math.max(Number(this.leftN), Number(this.rightN))
+    return Number(fixDecimal(v,3))
+  }
+
+  min(): number{
+    const v = this.type == RCValueT.PureNumber ? Number(this.number) : Math.min(Number(this.leftN), Number(this.rightN))
+    return Number(fixDecimal(v,3))
   }
 
   equal(other : RCValue, delta ?: number): boolean {
