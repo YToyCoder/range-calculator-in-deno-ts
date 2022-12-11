@@ -17,3 +17,7 @@ export function tokenlize(source : string) : Array<Token> {
   }
   return tokens
 }
+
+export function fixDecimal(target: number, num: number): string{
+  return target.toFixed(num)
+}

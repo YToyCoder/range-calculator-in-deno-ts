@@ -1,14 +1,15 @@
 import { assertEquals, assertFalse} from "https://deno.land/std@0.165.0/testing/asserts.ts";
-import { RCValue, RCValueT } from "./types.ts";
+import { createPureRCValue, createRangeRCValue, RCValue, RCValueT } from "./types.ts";
 import { createToken, LexerFactoryImpl, TokenType } from "./Lexer.ts";
-import { EvalBuilderImpl, rc_eval } from './main.ts'
+import { compileToRCValue, EvalBuilderImpl, rc_eval, VarsEvaluator } from './main.ts'
 import { tokenlize } from './Util.ts'
 import { errorBuilder } from "./RCError.ts";
 
 function errorTest(source: string) {
   try{
-    new EvalBuilderImpl()
-    .eval(source)
+    // new EvalBuilderImpl()
+    // .eval(source)
+    rc_eval(source)
   }catch(e){
     console.error(e.toString());
   }
@@ -78,4 +79,39 @@ Deno.test({
     errorTest("(2.001 ~ 3.002) - a * 10")
     errorTest("(2.001 ~ 3.002) - a * 10 + build + 3.004")
   }
+})
+
+function try_with(fn: Function){
+  try {
+    fn()
+  }catch(e){
+    console.error(e.toString())
+    
+  }
+}
+
+Deno.test({
+  name: "var evaluator",
+  fn: () => {
+    try_with(
+      () => {
+        new VarsEvaluator()
+        .setEnv("a")
+        .eval("a + b + c")
+      }
+    )
+
+    try_with(
+      () => {
+        new VarsEvaluator()
+        .eval("(3 ~ 4)")
+      }
+    )
+  }
+})
+
+Deno.test("compile string to RCValue", () => {
+  assertEquals( compileToRCValue("1.0"), createPureRCValue(1.0))
+  assertEquals( compileToRCValue("(1.0 ~ 1.23)"), createRangeRCValue(1.0,1.23))
+  assertEquals( compileToRCValue("1.0 ~ 1.23"), createRangeRCValue(1.0,1.23))
 })
