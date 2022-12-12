@@ -253,7 +253,7 @@ class LexerImpl2 implements Lexer {
     }else{
       const e = errorBuilder()
       .source(this.source)
-      .message("无法识别语句")
+      .message(`无法识别语句<${JSON.stringify(c)}>`)
       .location(this.position)
       .build()
       throw e
@@ -281,7 +281,7 @@ class LexerImpl2 implements Lexer {
     const source = this.source
     while(
       source.length > this.position && 
-      source[this.position] === ' '
+      /[ |\r|\n]/.test(source[this.position])
     ) this.position++
   }
 
