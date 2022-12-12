@@ -37,7 +37,9 @@ export class Emulator implements Visitor {
     const { children : [left, right] } = node
     const lV = left.accept(this)
     const rV = right.accept(this)
-    return lV[method](rV)
+    const r = lV[method](rV)
+    // console.log(`visiting ${method} l-${lV.toString()} r-${rV.toString()} r-${r.toString()}`);
+    return r
   }
 
   visitMulti(node:TreeNode){

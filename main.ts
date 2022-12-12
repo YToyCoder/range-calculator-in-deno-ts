@@ -32,6 +32,7 @@ export class EvalBuilderImpl implements EvalBuilder{
     const lexer = new LexerFactoryImpl(source).create()
     const tree = new ParserImpl(lexer)
       .parse()
+    // console.log(JSON.stringify(tree, null, 2))
     // const vars = lexer.varsExport()
     // this.env.forEach((_, key) => vars.delete(key))
     // if(vars.size > 0){

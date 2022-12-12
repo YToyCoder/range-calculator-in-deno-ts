@@ -196,7 +196,7 @@ export class ParserImpl implements Parser{
 
     if(lexer.hasNext()){
       const start = lexer.peek()
-      const left = this.buildT(lexer)
+      let left = this.buildT(lexer)
       if(!left)
         errorBuilder()
         .source(lexer.source)
@@ -204,14 +204,16 @@ export class ParserImpl implements Parser{
         .message("语法错误")
         .build()
 
-      if(lexer.hasNext() && opOk(lexer.peek()) ){
+      while(lexer.hasNext() && opOk(lexer.peek()) ){
         const op = lexer.next()
-        const right = this.buildE(lexer)
+        const right = this.buildT(lexer)
         switch (op.id) {
           case '+':
-            return new AddExpression(op.id, AstNodeT.ADD, op.position, [left, right])
+            left = new AddExpression(op.id, AstNodeT.ADD, op.position, [left, right])
+            break;
           case '-':
-            return new SubExpression(op.id, AstNodeT.SUB, op.position,[left, right])
+            left = new SubExpression(op.id, AstNodeT.SUB, op.position,[left, right])
+            break;
           default:
             throw errorBuilder()
             .source(lexer.source)
