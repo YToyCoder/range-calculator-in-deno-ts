@@ -2,7 +2,6 @@ import * as Colors from "https://deno.land/std/fmt/colors.ts"
 import { readline } from "https://deno.land/x/readline@v1.1.0/mod.ts"
 import { Emulator } from "./Emulator.ts";
 import { LexerFactoryImpl } from "./Lexer.ts";
-import { rc_eval } from "./main.ts";
 import { ParserImpl } from "./Parser.ts";
 
 const welcome = `
