@@ -24,7 +24,8 @@ export class Emulator implements Visitor {
 
     // this.set(node.children[])
     const name = node.children[0].value.toString()
-    this.set(name, createPureRCValue(0))
+    if(!this.variableValues.has(name))
+      this.set(name, createPureRCValue(0))
     const value  = (node.children[1].accept(this) as RCValue)
     this.set(name, value)
     return value
