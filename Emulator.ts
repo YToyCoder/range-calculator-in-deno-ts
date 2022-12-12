@@ -3,12 +3,17 @@ import { TreeNode, Visitor, RCValueT, createPureRCValue, createRangeRCValue, RCV
 
 export class Emulator implements Visitor {
   readonly variableValues : Map<string,RCValue>
-  readonly source: string
+  source: string
   
   constructor(source: string){
     this.variableValues = new Map<string,RCValue>()
     this.source = source
   }
+
+  setSource(str: string): void {
+    this.source = str
+  }
+
   visitAssignment(node: TreeNode): RCValue {
     if(!node.children)
       throw errorBuilder()
@@ -38,7 +43,6 @@ export class Emulator implements Visitor {
     const lV = left.accept(this)
     const rV = right.accept(this)
     const r = lV[method](rV)
-    // console.log(`visiting ${method} l-${lV.toString()} r-${rV.toString()} r-${r.toString()}`);
     return r
   }
 
