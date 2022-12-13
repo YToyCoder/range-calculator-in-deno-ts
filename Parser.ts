@@ -70,6 +70,13 @@ class AssignmentExpression extends CommonNode{
   }
 }
 
+export class MAssignment extends CommonNode{
+
+  accept(visitor: Visitor): RCValue {
+    return visitor.visitMAssignment(this)
+  }
+}
+
 /* paser */
 function isVariable(token: Token) : boolean{
   return token.type == TokenType.Variable
@@ -93,7 +100,11 @@ export class ParserImpl implements Parser{
   }
 
   /**
-   * A -> id "=" E | E 
+   * A -> id "=" E 
+   *     | id "+=" E 
+   *     | id "-=" E 
+   *     | id "*=" E
+   *     | id "/=" E
    */
   private term(lexer : Lexer) : TreeNode {
     if(!lexer.hasNext())
@@ -104,7 +115,23 @@ export class ParserImpl implements Parser{
     function isEqualOp(tok: Token | undefined) : boolean {
       if(typeof tok == "undefined")
         return false
-      return tok.type == TokenType.OP && tok.id == '=' 
+      if(tok.type != TokenType.OP)
+        throw errorBuilder()
+        .location(tok.position)
+        .message(`assignment not support ${tok.id}`)
+        .source(lexer.source)
+        .build()
+      switch(tok.id){
+        case "=":
+        case "+=":
+        case "-=":
+        case "*=":
+        case "/=":
+          return true
+        default:
+          return false
+      }
+      // return tok.type == TokenType.OP && tok.id == '=' 
     }
     if(idOrExpr.type == AstNodeT.Variable && lexer.hasNext() && isEqualOp(lexer.peek())) {
       // id "=" E
@@ -118,12 +145,16 @@ export class ParserImpl implements Parser{
       const expr = this.buildE(lexer)
       if(lexer.hasNext())
         throw errorBuilder()
+        .source(lexer.source)
         .location(lexer.next().position - 1)
         .message("语法错误")
         .build()
-      return new AssignmentExpression("=",AstNodeT.Assignment, equalOp.position, [id,expr])
+      return equalOp.id == "=" ? 
+      new AssignmentExpression("=",AstNodeT.Assignment, equalOp.position, [id,expr]) :
+      new MAssignment(equalOp.id, AstNodeT.Assignment, equalOp.position, [id, expr]);
     }else if(lexer.hasNext()){
       throw errorBuilder()
+      .source(lexer.source)
       .location(lexer.next().position - 1)
       .message("语法错误")
       .build()

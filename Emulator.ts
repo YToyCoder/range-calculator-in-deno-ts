@@ -10,6 +10,44 @@ export class Emulator implements Visitor {
     this.source = source
   }
 
+  visitMAssignment(node: TreeNode): RCValue {
+
+    if(!node.children)
+      throw errorBuilder()
+      .source(this.source)
+      .location(node.loc)
+      .message("解释赋值语句错误")
+      .build()
+
+    const tok = node.value
+    const name = node.children[0].value.toString()
+    if(!this.variableValues.has(name))
+      this.set(name, createPureRCValue(0))
+    const oldValue = (node.children[0].accept(this) as RCValue)
+    const exprValue = (node.children[1].accept(this) as RCValue)
+    let r = undefined
+    switch(tok){
+      case "+=":
+        r = oldValue.add(exprValue)
+        break
+      case "-=":
+        r = oldValue.sub(exprValue)
+        break
+      case "*=":
+        r = oldValue.multi(exprValue)
+        break
+      case "/=":
+        r = oldValue.divide(exprValue)
+        break
+      default:
+        throw errorBuilder()
+        .message(`build error in ma , token is ${tok}`)
+        .build()
+    }
+    this.set(name, r)
+    return r
+  }
+
   setSource(str: string): void {
     this.source = str
   }

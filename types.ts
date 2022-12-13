@@ -1,4 +1,6 @@
 import { fixDecimal } from "./Util.ts"
+// import { MAssignment } from './Parser.ts'
+
 export enum AstNodeT {
   MULTI ,
   DIVID ,
@@ -43,6 +45,8 @@ export interface Visitor{
   visitVar(node : TreeNode) : RCValue
 
   visitAssignment(node : TreeNode): RCValue
+
+  visitMAssignment(node : TreeNode) : RCValue
 }
 
 export interface EvalBuilder {

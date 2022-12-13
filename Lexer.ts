@@ -203,7 +203,6 @@ class LexerImpl2 implements Lexer {
 
   readonly source : string
   private position  = 0
-  private state : symbol = state.start
   private buffer : Array<Token> = []
   private vars : Map<string,Array<number>> 
 
@@ -249,7 +248,7 @@ class LexerImpl2 implements Lexer {
     }else if(isLetter(c)){
       return this.handleIdentifier()
     }else if(isOp(c)){
-      return this.handleOp()
+      return this.handleOp(c)
     }else{
       const e = errorBuilder()
       .source(this.source)
@@ -260,8 +259,21 @@ class LexerImpl2 implements Lexer {
     }
   }
 
-  private handleOp(){
-    return createToken(this.source[this.position], TokenType.OP, this.position++)
+  private handleOp(c : string){
+    switch(c){
+      case "+":
+      case "-":
+      case "*":
+      case "/":
+        if(this.position+1 < this.source.length && this.source[this.position + 1] == "="){
+          const recordPos = this.position
+          this.position += 2
+          return createToken(this.source.substring(recordPos, recordPos + 2), TokenType.OP, recordPos)
+        }
+        return createToken(this.source[this.position], TokenType.OP, this.position++)
+      default:
+        return createToken(this.source[this.position], TokenType.OP, this.position++)
+    }
   }
 
   private handleIdentifier() : Token {
