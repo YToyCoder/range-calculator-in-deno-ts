@@ -1,4 +1,4 @@
-import * as Colors from "https://deno.land/std/fmt/colors.ts"
+import * as Colors from "https://deno.land/std@0.167.0/fmt/colors.ts"
 import { readline } from "https://deno.land/x/readline@v1.1.0/mod.ts"
 import { Emulator } from "./Emulator.ts";
 import { LexerFactoryImpl } from "./Lexer.ts";
