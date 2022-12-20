@@ -6,6 +6,7 @@ import { ParserImpl } from "./Parser.ts";
 
 const welcome = `
 welcome to ${ Colors.yellow("range calculator") }.
+author : ${Colors.blue("forsilence")}
 `
 
 console.log(welcome);
