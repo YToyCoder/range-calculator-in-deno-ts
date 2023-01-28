@@ -229,7 +229,7 @@ export class ParserImpl implements Parser{
       const start = lexer.peek()
       let left = this.buildT(lexer)
       if(!left)
-        errorBuilder()
+        throw errorBuilder()
         .source(lexer.source)
         .location(Number(start?.position))
         .message("语法错误")
