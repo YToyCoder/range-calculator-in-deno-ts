@@ -24,7 +24,7 @@ import { RCValue } from "types.ts"
 const r : RCValue = new EvalBuilderImpl()
 .setEnv("a",1.0)
 .setEnv("b",2.0)
-.eval("a + b + (1.001 ~ 1.201")
+.eval("a + b + (1.001 ~ 1.201)")
 console.log(r.toString())
 // log 
 // (4.001 ~ 4.201)
