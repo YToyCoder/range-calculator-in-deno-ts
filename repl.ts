@@ -33,9 +33,7 @@ for await (const line of readline(Deno.stdin)){
     const source = new TextDecoder().decode(line)
     emulator.setSource(source)
     success(
-      new ParserImpl(
-        new LexerFactoryImpl(source)
-        .create())
+      new ParserImpl(new LexerFactoryImpl(source).create())
       .parse()
       .accept(emulator)
       .toString()

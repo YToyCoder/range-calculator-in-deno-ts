@@ -202,7 +202,7 @@ export class ParserImpl implements Parser{
     if(!lexer.hasNext() || (rec = lexer.next()).id != ')') // pop )
       throw errorBuilder()
       .location(rec == undefined ? lexer.source.length - 1 : rec.position)
-      .message("公式错误没有反括号‘)’")
+      .message("公式错误没有反括号‘)‘")
       .source(lexer.source)
       .build()
     return ans

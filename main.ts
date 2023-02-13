@@ -5,8 +5,7 @@ import { AstNodeT, createPureRCValue, EvalBuilder, RCValue  } from "./types.ts"
 import { errorBuilder } from "./RCError.ts";
 
 export function rc_eval(str : string): RCValue{
-  return new EvalBuilderImpl()
-  .eval(str)
+  return new EvalBuilderImpl().eval(str)
 }
 
 export class EvalBuilderImpl implements EvalBuilder{
@@ -30,8 +29,7 @@ export class EvalBuilderImpl implements EvalBuilder{
       this.emulator = new Emulator(source)
     this.env.forEach((val, key) => this.emulator?.set(key, createPureRCValue(val)))
     const lexer = new LexerFactoryImpl(source).create()
-    const tree = new ParserImpl(lexer)
-      .parse()
+    const tree = new ParserImpl(lexer).parse()
     // console.log(JSON.stringify(tree, null, 2))
     // const vars = lexer.varsExport()
     // this.env.forEach((_, key) => vars.delete(key))
@@ -63,11 +61,9 @@ export class VarsEvaluator {
     return this
   }
   eval(source: string): boolean{
-    
     // this.env.forEach((val, key) => this.emulator?.set(key, val))
     const lexer = new LexerFactoryImpl(source).create()
-    new ParserImpl(lexer)
-      .parse()
+    new ParserImpl(lexer).parse()
     const vars = lexer.varsExport()
     this.env.forEach((key) => vars.delete(key))
     if(vars.size > 0){
@@ -93,9 +89,8 @@ export function compileToRCValue(str : string): RCValue{
     str = `(${str})`
   }
   const lexer = new LexerFactoryImpl(str).create()
-  const tree = new ParserImpl(lexer)
-    .parse()
-  switch(tree.type ){
+  const tree = new ParserImpl(lexer).parse()
+  switch(tree.type){
     case AstNodeT.RANGE:
       return tree.accept(new Emulator(str))
     case  AstNodeT.NUM:
