@@ -31,21 +31,6 @@ export class EvalBuilderImpl implements EvalBuilder{
     this.env.forEach((val, key) => this.emulator?.set(key, createPureRCValue(val)))
     const lexer = new LexerFactoryImpl(source).create()
     const tree = new ParserImpl(lexer).parse()
-    // console.log(JSON.stringify(tree, null, 2))
-    // const vars = lexer.varsExport()
-    // this.env.forEach((_, key) => vars.delete(key))
-    // if(vars.size > 0){
-    //   const eb = errorBuilder().source(source)
-    //   let msg = "变量"
-    //   vars.forEach((val, key) => {
-    //     val.forEach(loc => eb.location(loc))
-    //     msg += ` ${key}`
-    //   })
-    //   msg += "不存在"
-    //   throw eb
-    //   .message(msg)
-    //   .build()
-    // }
     return tree.accept(this.emulator)
   }
 }
