@@ -9,6 +9,16 @@ export class Emulator implements Visitor {
     this.variableValues = new Map<string,RCValue>()
     this.source = source
   }
+  visitPrint(node: TreeNode): RCValue {
+    if(node.children == undefined) {
+      console.log();
+      return createPureRCValue(0)
+    }
+    const expr = node.children[0]
+    const r = expr.accept(this)
+    console.log(r.toString());
+    return r
+  }
 
   visitMAssignment(node: TreeNode): RCValue {
 

@@ -77,6 +77,13 @@ export class MAssignment extends CommonNode{
   }
 }
 
+export class PrintStat extends CommonNode {
+
+  accept(visitor: Visitor): RCValue {
+    return visitor.visitPrint(this)
+  }
+}
+
 /* paser */
 function isVariable(token: Token) : boolean{
   return token.type == TokenType.Variable
@@ -96,7 +103,18 @@ export class ParserImpl implements Parser{
   parse() : TreeNode {
     if(!this.lexer.hasNext())
       throw new Error('paser err')
-    return this.term(this.lexer)
+    return this.stat(this.lexer)
+  }
+
+  // stat -> print + term | term
+  private stat(lexer: Lexer) {
+    const firstTok = lexer.peek()
+    if(firstTok?.type == TokenType.OP && firstTok.id == "print"){
+      lexer.next()
+      const expr = lexer.hasNext() ? this.term(lexer) : undefined
+      return new PrintStat("print", AstNodeT.Print, firstTok.position, expr ? [expr] : undefined)
+    }
+    return this.term(lexer)
   }
 
   /**

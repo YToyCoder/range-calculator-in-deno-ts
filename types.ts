@@ -11,7 +11,8 @@ export enum AstNodeT {
   SUB ,
   Parenthesis ,
   Variable,
-  Assignment 
+  Assignment,
+  Print
 }
 
 export interface Parser {
@@ -47,6 +48,8 @@ export interface Visitor{
   visitAssignment(node : TreeNode): RCValue
 
   visitMAssignment(node : TreeNode) : RCValue
+
+  visitPrint(node: TreeNode) : RCValue
 }
 
 export interface EvalBuilder {

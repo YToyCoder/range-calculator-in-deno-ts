@@ -33,6 +33,7 @@ const state : Record<string,symbol> = {
   add : Symbol('11'),
   divide : Symbol('12'),
   double : Symbol('13'),
+  print: Symbol('14'),
   err : Symbol('error')
 }
 
@@ -286,7 +287,7 @@ class LexerImpl2 implements Lexer {
       this.vars.set(id,[])
     }
     this.vars.get(id)?.push(recordPos)
-    return createToken(id, TokenType.Variable, recordPos)
+    return createToken(id, id == "print" ? TokenType.OP : TokenType.Variable, recordPos)
   }
 
   private ignoreSpace(){

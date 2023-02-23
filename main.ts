@@ -4,7 +4,6 @@ import { Emulator } from "./Emulator.ts"
 import { AstNodeT, createPureRCValue, EvalBuilder, Parser, RCValue  } from "./types.ts"
 import { errorBuilder } from "./RCError.ts";
 import { readline } from "https://deno.land/x/readline@v1.1.0/mod.ts"
-import * as Colors from "https://deno.land/std/fmt/colors.ts"
 
 export function rc_eval(str : string): RCValue{
   return new EvalBuilderImpl().eval(str)
@@ -162,7 +161,7 @@ function execLine(ec: EvaluatingContext): void {
   const tree = ec.parser?.parse()
   if(ec.evaluator == undefined)
     throw {toString: ()=>"evaluator not exists"}
-  console.log(`line result : ${Colors.green(tree?.accept(ec.evaluator).toString())}`)
+  tree?.accept(ec.evaluator)
 }
 
 export async function compileAndRunScript(fname: string): Promise<void> {
