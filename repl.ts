@@ -27,10 +27,15 @@ const arrow = "> "
 print(arrow)
 const emulator = new Emulator("")
 
+const textDecoder = new TextDecoder() 
+const EndCode = "#"
+
 for await (const line of readline(Deno.stdin)){
   // console.log(`line: ${new TextDecoder().decode(line)}`);
   try {
-    const source = new TextDecoder().decode(line)
+    const source = textDecoder.decode(line).trim()
+    if(source == EndCode)
+      Deno.exit(0)
     emulator.setSource(source)
     success(
       new ParserImpl(new LexerFactoryImpl(source).create())
