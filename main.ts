@@ -1,9 +1,8 @@
-import { Lexer, LexerFactoryImpl } from "./Lexer.ts"
+import { LexerFactoryImpl } from "./Lexer.ts"
 import { ParserImpl  } from "./Parser.ts"
 import { Emulator } from "./Emulator.ts"
-import { AstNodeT, createPureRCValue, EvalBuilder, Parser, RCValue  } from "./types.ts"
+import { AstNodeT, createPureRCValue, EvalBuilder, RCValue  } from "./types.ts"
 import { errorBuilder } from "./RCError.ts";
-import { readline } from "https://deno.land/x/readline@v1.1.0/mod.ts"
 
 export function rc_eval(str : string): RCValue{
   return new EvalBuilderImpl().eval(str)
@@ -85,78 +84,5 @@ export function compileToRCValue(str : string): RCValue{
       throw errorBuilder()
       .message("表达式错误,表达式既不是范围表达式'(a ~ b)'也不是数值表达式`")
       .build()
-  }
-}
-
-enum EvaluatingPhase {
-  uinit, // un init
-  initialized,  // init
-  running, // runnning
-  finished // end
-}
-
-type EvaluatingContext = {
-  lexer: Lexer | undefined // lexer
-  parser: Parser | undefined // parser
-  evaluator: Emulator | undefined // emulator
-  filename: string // source filename
-  ln: number // line number
-  phase: EvaluatingPhase // phase stat
-}
-
-// 
-function createEvaluatingContext(filename: string): EvaluatingContext{
-  return  {
-    lexer: undefined,
-    parser: undefined,
-    evaluator: new Emulator(filename),
-    filename,
-    ln: -1,
-    phase: EvaluatingPhase.uinit,
-  }
-}
-
-function evaluatingPhaseChecking(ec: EvaluatingContext, expect: EvaluatingPhase | Array<EvaluatingPhase>): void {
-  if(expect instanceof Array<EvaluatingPhase>){
-    if(!expect.some(i => i === ec.phase)){
-      throw {toString: () => "not in right pahse"}
-    }
-  }else if(ec.phase !== expect){
-    throw {toString: () => "not in right phase"}
-  }
-}
-
-const linephase : EvaluatingPhase[] = [EvaluatingPhase.uinit, EvaluatingPhase.initialized]
-function perpareLexerAndParser(ec:EvaluatingContext ,linecode: string): void{
-  evaluatingPhaseChecking(ec, linephase)
-  // init lexer and parser
-  const lexer = new LexerFactoryImpl(linecode).create()
-  const parser = new ParserImpl(lexer)
-  ec.lexer = lexer
-  ec.parser = parser
-}
-
-function lineEvaluatingPrepare(ec: EvaluatingContext, line: string): void {
-  perpareLexerAndParser(ec, line) // lexer and parser 
-  ec.phase = EvaluatingPhase.initialized
-  ec.ln++
-}
-
-function execLine(ec: EvaluatingContext): void {
-  const tree = ec.parser?.parse()
-  if(ec.evaluator == undefined)
-    throw {toString: ()=>"evaluator not exists"}
-  tree?.accept(ec.evaluator)
-}
-
-export async function compileAndRunScript(fname: string): Promise<void> {
-  const decoder = new TextDecoder()
-  const econtext = createEvaluatingContext(fname)
-  const f = await Deno.open(fname)
-  for await (const line of readline(f)){
-    const dcline = decoder.decode(line)
-    if(dcline.length <= 1) continue
-    lineEvaluatingPrepare(econtext, dcline)
-    execLine(econtext)
   }
 }

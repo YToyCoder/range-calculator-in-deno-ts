@@ -1,11 +1,13 @@
 import { rc_eval } from "./main.ts"
 import * as Colors from "https://deno.land/std/fmt/colors.ts"
 
-Deno.args.forEach(value => {
+function evalPureString(code: string){
   try {
-    const r = rc_eval(value)
+    const r = rc_eval(code)
     console.log(Colors.green(r.toString()))
   }catch(e){
     console.error(Colors.red(e.toString()));
   }
-})
+}
+
+Deno.args.forEach(evalPureString)
